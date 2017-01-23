@@ -1,0 +1,32 @@
+Connect:
+
+ssh pi@192.168.1.29
+pwd: raspberry
+
+install python 3.6
+
+wget https://www.python.org/ftp/python/3.6.0/Python-3.6.0.tgz
+tar -zxvf Python-3.6.0.tgz
+cd Python-3.5.2
+./configure       # 3 min 13 s
+# We have 4 processors, so let's use 4 threads
+make -j4          # 8 min 29 s
+sudo make install # ~ 4 min
+cd ..
+sudo rm -fr ./Python-3.5.2*
+
+scp leboncoin.py pi@192.168.1.29:~/WebScraper/leboncoin.fr
+
+sudo apt-get install python3-pip
+sudo apt-get install python3-requests
+sudo apt-get install python3-lxml
+
+sudo apt-get install python-pip
+sudo apt-get install python-requests
+sudo apt-get install python-lxml
+
+change access
+sudo chmod 755 restart.sh
+
+open crontab with vim
+VISUAL=vim crontab -e
