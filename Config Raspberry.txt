@@ -15,8 +15,10 @@ sudo make install # ~ 4 min
 cd ..
 sudo rm -fr ./Python-3.5.2*
 
+copy script on raspberry:
 scp leboncoin.py pi@192.168.1.29:~/web_scraper/leboncoin
 
+install python3 on raspian
 sudo apt-get install python3-pip
 sudo apt-get install python3-requests
 sudo apt-get install python3-lxml
@@ -25,8 +27,18 @@ sudo apt-get install python-pip
 sudo apt-get install python-requests
 sudo apt-get install python-lxml
 
-change access
-sudo chmod 755 restart.sh
+change access right:
+sudo chmod 755 leboncoin.py
 
-open crontab with vim
+open crontab with vim:
 VISUAL=vim crontab -e
+
+Set vim as default editor:
+export VISUAL=vim
+
+Activate log crontab:
+vim /etc/rsyslog.conf
+uncomment CRON
+
+Access crontab log:
+/var/log/cron.log
