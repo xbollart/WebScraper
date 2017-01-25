@@ -15,7 +15,7 @@ sudo make install # ~ 4 min
 cd ..
 sudo rm -fr ./Python-3.5.2*
 
-scp leboncoin.py pi@192.168.1.29:~/WebScraper/leboncoin.fr
+scp leboncoin.py pi@192.168.1.29:~/web_scraper/leboncoin
 
 sudo apt-get install python3-pip
 sudo apt-get install python3-requests
