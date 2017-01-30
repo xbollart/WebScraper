@@ -8,6 +8,22 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 
+
+class Advert():
+    def __init__(self,url,description,price,surface,date):
+        self.url = url
+        self.description = description
+        self.price = price
+        self.surface = surface
+        self.date = date
+        self.remark = ""
+
+    def price_by_meter(self):
+        return self.price/self.surface
+   #     @property
+   #     def price_by_meter(self):
+
+
 def build_url(page_nb):
     website = "https://www.leboncoin.fr/ventes_immobilieres/offres"
     region = "haute_normandie"
@@ -46,24 +62,28 @@ def write_csv_file(ads,file_name):
         stream.write(str(ad[2]) + "," + str(ad[1]) + "," + str(ad[1]/ad[2]) + "," + ad[0] + os.linesep)
     stream.close() 
 
-def is_valid(ad,date, price_ratio_max,surface_min, surface_max):
+def is_valid(ad,date, price_ratio_max,surface_min, surface_max,keywords):
     is_valid = True
     # Check date is yesterday
-    if ad[4] != date:
+    if ad.date != date:
         is_valid = False
-        print("Date invalid")
-    # # Check price per square meter
-    if ad[1]/ad[2] > price_ratio_max:
+        print ("Date invalid") 
+    # Check price per square meter
+    print (ad.price_by_meter())
+    if ad.price_by_meter() > price_ratio_max:
         is_valid = False
-        print("price too high")
-    # # Check surface
-    if ad[2]< surface_min or ad[2] > surface_max:
+        print ("price too high")
+    # Check surface
+    if ad.surface < surface_min or ad.surface > surface_max:
         is_valid = False
-        print("surface not matching")
-
+        print ("surface not matching")
+    # Check Keywords
+    for keyword in keywords:
+        if keyword in ad.description:
+            ad.remark = ad.remark + " #"+keyword
     return is_valid
 
-def get_ads_infos(urls,date,price,s_min,s_max):
+def get_ads_infos(urls,date,price,s_min,s_max,keywords):
     infos = []
     for url in urls:
         print(url)
@@ -71,14 +91,17 @@ def get_ads_infos(urls,date,price,s_min,s_max):
         tree = html.fromstring(page.content)
         ad_price = int(tree.xpath('//h2[@class="item_price clearfix"]/@content')[0])
         ad_surface = int(tree.xpath('//div/h2[span = "Surface"]/span[@class="value"]/text()')[0][:-2])
-        ad_description = tree.xpath('//div[@class="line properties_description"]/p[@itemprop="description"]/text()')
+        ad_descriptions = tree.xpath('//div[@class="line properties_description"]/p[@itemprop="description"]/text()')
+        ad_description = ""
+        for line in ad_descriptions:
+            ad_description = ad_description + line
         ad_date = datetime.strptime(tree.xpath('//p[@class="line line_pro"]/@content')[0], '%Y-%m-%d')
-        ad = [url,ad_price,ad_surface,ad_description,ad_date]
-        if is_valid(ad,date,price,s_min,s_max):
+        ad = Advert(url, ad_description, ad_price, ad_surface, ad_date)
+        if is_valid(ad, date, price, s_min, s_max, keywords):
             infos.append(ad)
     return infos
 
-def send_simple_mail(TO,SUBJECT,TEXT):
+def send_simple_mail(TO, SUBJECT, TEXT):
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login("xavier.bollart@gmail.com", "Geekgm02")
@@ -86,7 +109,7 @@ def send_simple_mail(TO,SUBJECT,TEXT):
     server.sendmail("xavier.bollart@gmail.com", "xavier.bollart@gmail.com", msg)
     server.quit()
 
-def send_mail( m_to, m_subject, m_body,m_file_path = "",m_file_name = ""):
+def send_mail( m_to, m_subject, m_body, m_file_path = "", m_file_name = ""):
     m_from = "xavier.bollart@gmail.com"
     m_pwd = "Geekgm02"
 
@@ -98,7 +121,7 @@ def send_mail( m_to, m_subject, m_body,m_file_path = "",m_file_name = ""):
 
     msg.attach(MIMEText(m_body, 'plain'))
 
-    if (m_file_path != ""):
+    if m_file_path != "":
         attachment = open(m_file_path, "rb")
         part = MIMEBase('application', 'octet-stream')
         part.set_payload((attachment).read())
@@ -117,25 +140,27 @@ def build_body(ads):
     body = ""
     for i in range(0, len(ads)):
         ad = ads[i]
-        body = body + "appartement no " + str(i+1) +":  "+ str(ad[2]) + " m2    " + str(ad[1]/ad[2]) +" euro/m2"+ os.linesep
-        body = body + ad[0] + os.linesep + os.linesep   
+        body = body + "appartement no " + str(i+1) +":  "+ str(ad.surface) + " m2    " + str(ad.price_by_meter()) +" euro/m2"+ ad.remark + os.linesep
+        body = body + ad.url + os.linesep + os.linesep
     return body
 
-print("Start scraping leboncoin.fr")
+print ("Start scraping leboncoin.fr")
 date = datetime.now()
 price = 3000
 surface_min = 25
 surface_max = 40
+keywords = ["Dock","cauchoise"]
 to = "xavier.bollart@gmail.com"
 previous_day = datetime(date.year, date.month, date.day-1)
-print("Date of research: " + str(previous_day))
+print ("Date of research: " + str(previous_day))
 ads_urls = get_all_ads_urls()
-print("Nb of ads found: " + str(len(ads_urls)))
-ads_details = get_ads_infos(ads_urls,previous_day,price,surface_min,surface_max)
-print("Nb of ads matching criteria: " + str(len(ads_details)))
-file_name = previous_day.strftime('%d-%m-%Y') +"_leboncoin.csv"
+print ("Nb of ads found: " + str(len(ads_urls)))
+ads_details = get_ads_infos(ads_urls, previous_day, price, surface_min, surface_max, keywords)
+print ("Nb of ads matching criteria: " + str(len(ads_details)))
+#file_name = previous_day.strftime('%d-%m-%Y') +"_leboncoin.csv"
 #print("Generate CSV file: " + file_name)
 #write_csv_file(ads_details,file_name)
 print("Send report to: " + to)
 body = build_body(ads_details)
-send_mail(to,"Rouen Daily Report",body)
+if(len(body) > 0):
+    send_mail(to,"Rouen Daily Report",body)

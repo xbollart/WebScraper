@@ -3,42 +3,14 @@ Connect:
 ssh pi@192.168.1.29
 pwd: raspberry
 
-install python 3.6
-
-wget https://www.python.org/ftp/python/3.6.0/Python-3.6.0.tgz
-tar -zxvf Python-3.6.0.tgz
-cd Python-3.5.2
-./configure       # 3 min 13 s
-# We have 4 processors, so let's use 4 threads
-make -j4          # 8 min 29 s
-sudo make install # ~ 4 min
-cd ..
-sudo rm -fr ./Python-3.5.2*
-
 copy script on raspberry:
-scp leboncoin.py pi@192.168.1.29:~/web_scraper/leboncoin
-
-install python3 on raspian
-sudo apt-get install python3-pip
-sudo apt-get install python3-requests
-sudo apt-get install python3-lxml
-
-sudo apt-get install python-pip
-sudo apt-get install python-requests
-sudo apt-get install python-lxml
+scp rouen_apt.py pi@192.168.1.16:~/scripts/leboncoin
 
 change access right:
 sudo chmod 755 leboncoin.py
 
-open crontab with vim:
-VISUAL=vim crontab -e
-
-Set vim as default editor:
-export VISUAL=vim
-
-Activate log crontab:
-vim /etc/rsyslog.conf
-uncomment CRON
+open crontab:
+crontab -e
 
 Access crontab log:
 /var/log/cron.log
