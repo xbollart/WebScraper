@@ -17,14 +17,14 @@ class Advert():
     def price_by_meter(self):
         return self.price/self.surface
 
-def get_all_ads_urls(category, region, filters):
+def get_all_ads_urls(category, region, filters_dict):
     i = 1
     links = []
     #increment page number while page is not empty
     while True:
         url = website + "/" + category + "/offres/" + region + "/"
-        payload = {'o': i,'location': 'Rouen 76000','ps':'2','pe':'6','sqs':'1','sqe':'5','ret':'2' }
-        page = requests.get(url, params=payload)
+        filters_dict.update({'o': i})
+        page = requests.get(url, params=filters_dict)
         print(page.url)
         tree = html.fromstring(page.content)
         res = [ "http:" + link for link in tree.xpath('//a[@class="list_item clearfix trackable"]/@href')]
@@ -55,7 +55,7 @@ def is_valid(ad,date, price_ratio_max,surface_min, surface_max,keywords):
             ad.remark = ad.remark + " #"+keyword
     return is_valid
 
-def get_ads_infos(category, region, filters,date,price,s_min,s_max,keywords):
+def get_ads_infos(category, region, filters,date,price,s_min,s_max,keywords={}):
 
     urls = get_all_ads_urls(category, region, filters)
 

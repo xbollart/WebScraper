@@ -14,19 +14,19 @@ def build_body(ads):
 
 if __name__ == '__main__':
 
-    print ("Start scraping leboncoin.fr")
+    print ("Start scraping Rouen Appartements")
     date = datetime.now() - timedelta(days=1)
-    price_by_meter = 3000
+    price_by_meter_max = 3000
     surface_min = 25
     surface_max = 40
-    keywords = ["Dock","cauchoise"]
+    keywords = ["Dock","cauchoise","beauvoisine"]
     category = "ventes_immobilieres"
     region = "haute_normandie"
-    filters = "ps=2&pe=6&sqs=1&sqe=5&ret=2&location=Rouen%2076000"
+    filters = {'location': 'Rouen 76000','ps':'2','pe':'6','sqs':'1','sqe':'5','ret':'2' }
     to = "xavier.bollart@gmail.com"
     date = datetime(date.year, date.month, date.day)
     print ("Date of research: " + str(date))
-    ads_details = utils.leboncoin.get_ads_infos(category, region, filters, date, price_by_meter, surface_min, surface_max, keywords)
+    ads_details = utils.leboncoin.get_ads_infos(category, region, filters, date, price_by_meter_max, surface_min, surface_max, keywords)
     print ("Nb of ads matching criteria: " + str(len(ads_details)))
     print("Send report to: " + to)
     body = build_body(ads_details)
