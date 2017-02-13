@@ -1,4 +1,5 @@
 import requests
+import HTMLParser
 from lxml import html
 from datetime import datetime
 
@@ -12,7 +13,6 @@ class Advert():
         self.surface = surface
         self.date = date
         self.remark = ""
-        
 
     def price_by_meter(self):
         return self.price/self.surface
@@ -34,7 +34,7 @@ def get_all_ads_urls(category, region, filters_dict):
         i = i+1
     return links
 
-def is_valid(ad,date, price_ratio_max,surface_min, surface_max,keywords):
+def is_valid(ad,date, price_ratio_max,surface_min, surface_max, keywords):
     is_valid = True
     # Check date is yesterday
     if ad.date != date:
@@ -55,8 +55,105 @@ def is_valid(ad,date, price_ratio_max,surface_min, surface_max,keywords):
             ad.remark = ad.remark + " #"+keyword
     return is_valid
 
-def get_ads_infos(category, region, filters,date,price,s_min,s_max,keywords={}):
+def min_price_filter(price):
+    res = "0"
+    if price <= 350000:
+        res = str(price/25000)
+    elif price > 350000 and price <= 700000:
+        res = str((price - 350000)/50000 + 14)
+    elif price > 700000 and price <= 1500000:
+        res = str((price - 700000)/100000 + 21)
+    elif price > 1500000 and price < 2000000:
+        res = "29"
+    elif price > 2000000:
+        res = "30"
+    return res
 
+def max_price_filter(price):
+    res = 0
+    if price <= 350000:
+        res = price/25000 + 1
+        if(price%25000 == 0):
+            res = res - 1
+    elif price > 350000 and price <= 700000:
+        res = (price - 350000)/50000 + 15
+        if(price%50000 == 0):
+            res = res - 1
+    elif price > 700000 and price <= 1500000:
+        res = (price - 700000)/100000 + 22
+        if(price%100000 == 0):
+            res = res - 1
+    elif price > 1500000:
+        res = 30
+    return str(res)
+
+def surface_filter(surface):
+    res = "0"
+    if surface < 20:
+        res = "0"
+    elif surface >= 20 and surface <= 40:
+        res = str((surface - 20)/5 + 1)
+    elif surface > 40 and surface <= 150:
+        res = str((surface - 40)/10 + 5)
+    elif surface > 150 and surface < 200:
+        res = "16"
+    elif surface >= 200 and surface < 300:
+        res = "17"
+    elif surface >= 300 and surface < 500:
+        res = "18"
+    elif surface >= 500 :
+        res = "19"
+    return res
+
+def immo_type_filter(immo_type):
+    res = "unknown"
+    if immo_type == "maison":
+        res = "1"
+    elif immo_type == "appartement":
+        res = "2"
+    elif immo_type == "terrain":
+        res = "3"
+    elif immo_type == "parking":
+        res = "4"
+    elif immo_type == "autre":
+        res = "5"
+    return res
+
+
+def build_filters(location,p_min, p_max, s_min, s_max, immo_type):
+    #price min filter
+    ps = min_price_filter(p_min)
+    #price max filter
+    pe = max_price_filter(p_max)
+    #surface min filter
+    sqs = surface_filter(s_min)
+    #surface max filter
+    sqe = surface_filter(s_max)
+    # real estate type filter
+    ret = immo_type_filter(immo_type)
+    filter_dico = {}
+
+    if ps != "0":
+        filter_dico["ps"] = ps
+    if pe != "0":
+        filter_dico["pe"] = pe
+    if sqs != "0":
+        filter_dico["sqs"] = sqs
+    if sqe != "0":
+        filter_dico["sqe"] = sqe
+    if ret != "none":
+        filter_dico["ret"]= ret
+    if location != "unknown":
+        filter_dico["location"] = location
+
+    return filter_dico
+
+  #  return {'location': 'Rouen 76000','ps':'2','pe':'6','sqs':'1','sqe':'5','ret':'2' }
+
+
+def get_ads_infos(category, region, location, date, p_min, p_max, s_min, s_max, price_by_meter, immo_type, keywords={}):
+
+    filters = build_filters(location,p_min, p_max, s_min, s_max, immo_type)
     urls = get_all_ads_urls(category, region, filters)
 
     infos = []
@@ -69,9 +166,9 @@ def get_ads_infos(category, region, filters,date,price,s_min,s_max,keywords={}):
         ad_descriptions = tree.xpath('//div[@class="line properties_description"]/p[@itemprop="description"]/text()')
         ad_description = ""
         for line in ad_descriptions:
-            ad_description = ad_description + line
+            ad_description = ad_description + line.encode('utf8')
         ad_date = datetime.strptime(tree.xpath('//p[@class="line line_pro"]/@content')[0], '%Y-%m-%d')
         ad = Advert(url, ad_description, ad_price, ad_surface, ad_date)
-        if is_valid(ad, date, price, s_min, s_max, keywords):
+        if is_valid(ad, date, price_by_meter, s_min, s_max, keywords):
             infos.append(ad)
     return infos

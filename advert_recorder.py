@@ -1,9 +1,7 @@
-import os
-from lxml import html
+
 from datetime import datetime, timedelta
 import utils.leboncoin
 import utils.file
-
 
 if __name__ == '__main__':
 
@@ -14,7 +12,7 @@ if __name__ == '__main__':
     category = "ventes_immobilieres"
     region = "haute_normandie"
     filters = {'location': 'Rouen 76000','ps':'2','pe':'6','sqs':'1','sqe':'5','ret':'2' }
-    file_name = "rouen_30012017.csv"
+    file_name = "./reports/rouen_30012017.csv"
 
     ads_details = utils.leboncoin.get_ads_infos(category, region, filters, date, price_by_meter_max, surface_min, surface_max)
 
