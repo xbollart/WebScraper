@@ -10,14 +10,26 @@ import utils.leboncoin
 # r = requests.get(url, params=filters)
 # print(r.url)
 
-print(utils.leboncoin.max_price_filter(10000))
-print(utils.leboncoin.max_price_filter(25000))
-print(utils.leboncoin.max_price_filter(40000))
-print(utils.leboncoin.max_price_filter(50000))
-print(utils.leboncoin.max_price_filter(340000))
-print(utils.leboncoin.max_price_filter(350000))
-print(utils.leboncoin.max_price_filter(360000))
-print(utils.leboncoin.max_price_filter(400000))
-print(utils.leboncoin.max_price_filter(660000))
-print(utils.leboncoin.max_price_filter(700000))
+# print(utils.leboncoin.max_price_filter(10000))
+# print(utils.leboncoin.max_price_filter(25000))
+# print(utils.leboncoin.max_price_filter(40000))
+# print(utils.leboncoin.max_price_filter(50000))
+# print(utils.leboncoin.max_price_filter(340000))
+# print(utils.leboncoin.max_price_filter(350000))
+# print(utils.leboncoin.max_price_filter(360000))
+# print(utils.leboncoin.max_price_filter(400000))
+# print(utils.leboncoin.max_price_filter(660000))
+# print(utils.leboncoin.max_price_filter(700000))
+
+print(utils.leboncoin.test_max(33))
+print(utils.leboncoin.test_max(36))
+print(utils.leboncoin.test_max(40))
+print(utils.leboncoin.test_max(41))
+print(utils.leboncoin.test_max(50))
+print(utils.leboncoin.test_max(135))
+print(utils.leboncoin.test_max(140))
+
+
+
+
 

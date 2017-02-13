@@ -2,6 +2,7 @@ import requests
 import HTMLParser
 from lxml import html
 from datetime import datetime
+import math
 
 website = "https://www.leboncoin.fr"
 
@@ -56,18 +57,18 @@ def is_valid(ad,date, price_ratio_max,surface_min, surface_max, keywords):
     return is_valid
 
 def min_price_filter(price):
-    res = "0"
+    res = 0
     if price <= 350000:
-        res = str(price/25000)
+        res = price/25000
     elif price > 350000 and price <= 700000:
-        res = str((price - 350000)/50000 + 14)
+        res = (price - 350000)/50000 + 14
     elif price > 700000 and price <= 1500000:
-        res = str((price - 700000)/100000 + 21)
+        res = (price - 700000)/100000 + 21
     elif price > 1500000 and price < 2000000:
-        res = "29"
+        res = 29
     elif price > 2000000:
-        res = "30"
-    return res
+        res = 30
+    return str(res)
 
 def max_price_filter(price):
     res = 0
@@ -87,23 +88,59 @@ def max_price_filter(price):
         res = 30
     return str(res)
 
-def surface_filter(surface):
-    res = "0"
+def max_surface_filter(surface):
+    res = 0
     if surface < 20:
-        res = "0"
+        res = 1
     elif surface >= 20 and surface <= 40:
-        res = str((surface - 20)/5 + 1)
+        res = (surface - 20)/5 + 2
+        if(surface%5):
+            res = res - 1
     elif surface > 40 and surface <= 150:
-        res = str((surface - 40)/10 + 5)
+        res = (surface - 40)/10 + 6
+        if(surface%10):
+            res = res - 1
     elif surface > 150 and surface < 200:
-        res = "16"
+        res = 17
     elif surface >= 200 and surface < 300:
-        res = "17"
+        res = 18
+    elif surface >= 300 :
+        res = 19
+    return str(res)
+
+def test_max(surface):
+    res = 0.0
+    if surface > 500:
+        res = 0
+    elif surface > 300:
+        res = 20
+    elif surface >= 150:
+        res = math.ceil(19.0 + surface/50.0 - 6.0)
+    elif surface >= 40:
+        res = math.ceil(15.0 + surface/10.0 - 14.0)
+    elif surface >= 20:
+        res = math.ceil(4.0 + surface/5.0 -7.0)
+    elif surface > 0:
+        res = 1
+    return str(int(res))
+
+def min_surface_filter(surface):
+    res = 0
+    if surface < 20:
+        res = 0
+    elif surface >= 20 and surface <= 40:
+        res = (surface - 20)/5 + 1
+    elif surface > 40 and surface <= 150:
+        res = (surface - 40)/10 + 5
+    elif surface > 150 and surface < 200:
+        res = 16
+    elif surface >= 200 and surface < 300:
+        res = 17
     elif surface >= 300 and surface < 500:
-        res = "18"
+        res = 18
     elif surface >= 500 :
-        res = "19"
-    return res
+        res = 19
+    return str(res)
 
 def immo_type_filter(immo_type):
     res = "unknown"
