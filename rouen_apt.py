@@ -16,7 +16,7 @@ if __name__ == '__main__':
     print ("Start scraping Rouen Appartements")
     date = datetime.now() - timedelta(days=1)
     price_by_meter_max = 3000
-    surface_min = 26
+    surface_min = 21
     surface_max = 39
     price_min = 55000
     price_max =120000

@@ -71,44 +71,18 @@ def min_price_filter(price):
     return str(res)
 
 def max_price_filter(price):
-    res = 0
-    if price <= 350000:
-        res = price/25000 + 1
-        if(price%25000 == 0):
-            res = res - 1
-    elif price > 350000 and price <= 700000:
-        res = (price - 350000)/50000 + 15
-        if(price%50000 == 0):
-            res = res - 1
-    elif price > 700000 and price <= 1500000:
-        res = (price - 700000)/100000 + 22
-        if(price%100000 == 0):
-            res = res - 1
-    elif price > 1500000:
-        res = 30
-    return str(res)
+    res = 0.0
+    if price > 2000000:
+        res = 0.0
+    elif price > 700000:
+        res = math.ceil(29.0 + price/100000.0 - 15.0)
+    elif price > 350000:
+        res = math.ceil(20.0 + price/50000.0 -13.0)
+    elif price > 0:
+        res = math.ceil(13.0 + price/25000.0 - 13.0)
+    return str(int(res))
 
 def max_surface_filter(surface):
-    res = 0
-    if surface < 20:
-        res = 1
-    elif surface >= 20 and surface <= 40:
-        res = (surface - 20)/5 + 2
-        if(surface%5):
-            res = res - 1
-    elif surface > 40 and surface <= 150:
-        res = (surface - 40)/10 + 6
-        if(surface%10):
-            res = res - 1
-    elif surface > 150 and surface < 200:
-        res = 17
-    elif surface >= 200 and surface < 300:
-        res = 18
-    elif surface >= 300 :
-        res = 19
-    return str(res)
-
-def test_max(surface):
     res = 0.0
     if surface > 500:
         res = 0
@@ -138,7 +112,7 @@ def min_surface_filter(surface):
         res = 17
     elif surface >= 300 and surface < 500:
         res = 18
-    elif surface >= 500 :
+    elif surface >= 500:
         res = 19
     return str(res)
 
@@ -156,16 +130,15 @@ def immo_type_filter(immo_type):
         res = "5"
     return res
 
-
 def build_filters(location,p_min, p_max, s_min, s_max, immo_type):
     #price min filter
     ps = min_price_filter(p_min)
     #price max filter
     pe = max_price_filter(p_max)
     #surface min filter
-    sqs = surface_filter(s_min)
+    sqs = min_surface_filter(s_min)
     #surface max filter
-    sqe = surface_filter(s_max)
+    sqe = max_surface_filter(s_max)
     # real estate type filter
     ret = immo_type_filter(immo_type)
     filter_dico = {}
@@ -182,7 +155,6 @@ def build_filters(location,p_min, p_max, s_min, s_max, immo_type):
         filter_dico["ret"]= ret
     if location != "unknown":
         filter_dico["location"] = location
-
     return filter_dico
 
   #  return {'location': 'Rouen 76000','ps':'2','pe':'6','sqs':'1','sqe':'5','ret':'2' }
