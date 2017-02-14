@@ -157,9 +157,6 @@ def build_filters(location,p_min, p_max, s_min, s_max, immo_type):
         filter_dico["location"] = location
     return filter_dico
 
-  #  return {'location': 'Rouen 76000','ps':'2','pe':'6','sqs':'1','sqe':'5','ret':'2' }
-
-
 def get_ads_infos(category, region, location, date, p_min, p_max, s_min, s_max, price_by_meter, immo_type, keywords={}):
 
     filters = build_filters(location,p_min, p_max, s_min, s_max, immo_type)
