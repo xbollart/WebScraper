@@ -13,7 +13,7 @@ def build_body(ads):
 
 if __name__ == '__main__':
 
-    date = datetime.now() - timedelta(days=1)
+    date = datetime.now() #- timedelta(days=1)
     price_by_meter_max = 3000
     surface_min = 20
     surface_max = 40

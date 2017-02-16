@@ -13,7 +13,7 @@ def build_body(ads):
 
 if __name__ == '__main__':
 
-    date = datetime.now() - timedelta(days=1)
+    date = datetime.now() #- timedelta(days=1)
     price_by_meter_max = 5000
     surface_min = 20
     surface_max = 40
@@ -29,4 +29,4 @@ if __name__ == '__main__':
     ads_details = utils.leboncoin.get_ads_infos(category, region, location, date, price_min, price_max, surface_min, surface_max, price_by_meter_max, immo_type, keywords)
     body = build_body(ads_details)
     if(len(body) > 0):
-        utils.mail.send_mail(to,"Bordaux Daily Report",body)
+        utils.mail.send_mail(to,"Bordeaux Daily Report",body)

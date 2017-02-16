@@ -1,5 +1,6 @@
 
 import utils.leboncoin
+from datetime import datetime, timedelta
 
 # website = "https://www.leboncoin.fr"
 # category = "ventes_immobilieres"
@@ -10,6 +11,12 @@ import utils.leboncoin
 # r = requests.get(url, params=filters)
 # print(r.url)
 
+date = datetime.now() - timedelta(days=1)
+date_min = datetime(date.year, date.month, date.day)
+date_max = datetime.now()
+
+print date_min
+print date_max
 
 
 

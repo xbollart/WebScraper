@@ -2,3 +2,5 @@ le bon coin:
 
 https://www.leboncoin.fr/ventes_immobilieres/offres/haute_normandie/seine_maritime/?o=1&ps=2&pe=6&sqs=1&sqe=5&ret=2&location=Rouen%2076000
 
+contact:
+id=1093412146

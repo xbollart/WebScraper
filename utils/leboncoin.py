@@ -1,7 +1,6 @@
 import requests
-import HTMLParser
 from lxml import html
-from datetime import datetime
+from datetime import datetime, timedelta
 import math
 
 website = "https://www.leboncoin.fr"
@@ -16,7 +15,7 @@ class Advert():
         self.remark = ""
 
     def price_by_meter(self):
-        return self.price/self.surface
+        return int(self.price/self.surface)
 
 def get_all_ads_urls(category, region, filters_dict):
     i = 1
@@ -35,10 +34,32 @@ def get_all_ads_urls(category, region, filters_dict):
         i = i+1
     return links
 
+def get_ads_urls_specific_date(category, region, filters_dict,date):
+    i = 1
+    links = []
+    #increment page number while page is not empty
+    while True:
+        url = website + "/" + category + "/offres/" + region + "/"
+        filters_dict.update({'o': i})
+        page = requests.get(url, params=filters_dict)
+        print(page.url)
+        tree = html.fromstring(page.content)
+        res = [ "http:" + link for link in tree.xpath('//a[@class="list_item clearfix trackable"]/@href')]
+        if len(res) == 0:
+            break
+        links = links + res
+        i = i+1
+    return links
+
+
 def is_valid(ad,date, price_ratio_max,surface_min, surface_max, keywords):
     is_valid = True
+    date_min = date - timedelta(days=1)
+  #  date_min = datetime(prev_date.year, prev_date.month, prev_date.day)
+    date_max = date
     # Check date is yesterday
-    if ad.date != date:
+   # if ad.date != date:
+    if ad.date < date_min or ad.date > date_max:
         is_valid = False
         print ("Date invalid") 
     # Check price per square meter
@@ -68,7 +89,7 @@ def min_price_filter(price):
         res = 29
     elif price > 2000000:
         res = 30
-    return str(res)
+    return str(int(res))
 
 def max_price_filter(price):
     res = 0.0
@@ -114,7 +135,7 @@ def min_surface_filter(surface):
         res = 18
     elif surface >= 500:
         res = 19
-    return str(res)
+    return str(int(res))
 
 def immo_type_filter(immo_type):
     res = "unknown"
@@ -171,8 +192,9 @@ def get_ads_infos(category, region, location, date, p_min, p_max, s_min, s_max, 
         ad_surface = int(tree.xpath('//div/h2[span = "Surface"]/span[@class="value"]/text()')[0][:-2])
         ad_descriptions = tree.xpath('//div[@class="line properties_description"]/p[@itemprop="description"]/text()')
         ad_description = ""
+        # agregate description array into one string
         for line in ad_descriptions:
-            ad_description = ad_description + line.encode('utf8')
+            ad_description = ad_description + line
         ad_date = datetime.strptime(tree.xpath('//p[@class="line line_pro"]/@content')[0], '%Y-%m-%d')
         ad = Advert(url, ad_description, ad_price, ad_surface, ad_date)
         if is_valid(ad, date, price_by_meter, s_min, s_max, keywords):
