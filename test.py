@@ -1,25 +1,22 @@
 
-import utils.leboncoin
+import requests
+from lxml import html
 from datetime import datetime, timedelta
-
-# website = "https://www.leboncoin.fr"
-# category = "ventes_immobilieres"
-# region = "haute_normandie"
-# #ps = prix min 0 = aucun
-# filters = {'o': '1','location': 'Rouen 76000','ps':'2','pe':'6','sqs':'1','sqe':'5','ret':'2' }
-# url = website + "/" + category + "/offres/" + region + "/"
-# r = requests.get(url, params=filters)
-# print(r.url)
-
-date = datetime.now() - timedelta(days=1)
-date_min = datetime(date.year, date.month, date.day)
-date_max = datetime.now()
-
-print date_min
-print date_max
+import math
+import pandas as pd 
+from pandas import DataFrame, read_csv
 
 
+# print stream
+url = 'https://www.leboncoin.fr/ventes_immobilieres/offres/ile_de_france/?th=1&location=Paris&parrot=0'
+page = requests.get(url)
+tree = html.fromstring(page.content)
 
+url = tree.xpath('//li[@itemtype="http://schema.org/Offer"]/a/@href')
+date = tree.xpath('//li[@itemtype="http://schema.org/Offer"]/a/section/aside/p/@content')
+
+df = pd.DataFrame(data = list(zip(url,date)), columns=['urls', 'dates'])
+df.to_csv('../res.csv',index=False,header=False)
 
 
 
