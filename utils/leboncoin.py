@@ -2,23 +2,9 @@ import requests
 from lxml import html
 from datetime import datetime, timedelta
 import pandas as pd
-import numpy as np
 import math
 
 website = "https://www.leboncoin.fr"
-
-
-class Advert():
-    def __init__(self, url, description, price, surface, date):
-        self.url = url
-        self.description = description
-        self.price = price
-        self.surface = surface
-        self.date = date
-        self.remark = ""
-
-    def price_by_meter(self):
-        return int(self.price / self.surface)
 
 
 def get_all_ads_urls(category, region, filters_dict):
@@ -176,32 +162,11 @@ def build_filters(location, p_min, p_max, s_min, s_max, immo_type):
     return filter_dico
 
 
-def get_ads_infos_mock(category, region, location, date, p_min, p_max, s_min, s_max, price_by_meter, immo_type,
-                       keywords={}):
-    url = ["http://localhost/~xavierbollart/leboncoinmock/index.html"]
-
-    infos = []
-
-    tree = html.fromstring(url)
-    ad_price = int(tree.xpath('//h2[@class="item_price clearfix"]/@content')[0])
-    ad_surface = int(tree.xpath('//div/h2[span = "Surface"]/span[@class="value"]/text()')[0][:-2])
-    ad_descriptions = tree.xpath('//div[@class="line properties_description"]/p[@itemprop="description"]/text()')
-    ad_description = ""
-    # agregate description array into one string
-    for line in ad_descriptions:
-        ad_description = ad_description + line
-    ad_date = datetime.strptime(tree.xpath('//p[@class="line line_pro"]/@content')[0], '%Y-%m-%d')
-    ad = Advert(url, ad_description, ad_price, ad_surface, ad_date)
-    if is_valid(ad, date, price_by_meter, s_min, s_max, keywords):
-        infos.append(ad)
-    return infos
-
-
 def get_ads_infos(category, region, location, date, p_min, p_max, s_min, s_max, price_by_meter, immo_type, keywords={}):
     filters = build_filters(location, p_min, p_max, s_min, s_max, immo_type)
     urls = get_all_ads_urls(category, region, filters)
-
-    infos = []
+    infos = pd.DataFrame(columns=['url', 'description', 'price', 'surface', 'date'])
+    # select only urls with date corresponding to date parameter
     for index, row in urls.loc[date.strftime("%Y-%m-%d")].iterrows():
         print(row['url'])
         page = requests.get(row['url'])
@@ -211,7 +176,8 @@ def get_ads_infos(category, region, location, date, p_min, p_max, s_min, s_max, 
         ad_descriptions = tree.xpath('//div[@class="line properties_description"]/p[@itemprop="description"]/text()')
         ad_description = ''.join(line for line in ad_descriptions)
         ad_date = datetime.strptime(tree.xpath('//p[@class="line line_pro"]/@content')[0], '%Y-%m-%d')
-        ad = Advert(row['url'], ad_description, ad_price, ad_surface, ad_date)
-        if is_valid(ad, date, price_by_meter, s_min, s_max, keywords):
-            infos.append(ad)
+        infos.loc[len(infos)] = [row['url'], ad_description, ad_price, ad_surface, ad_date]
+
+    #    if is_valid(ad, date, price_by_meter, s_min, s_max, keywords):
+    #        infos.append(ad)
     return infos
