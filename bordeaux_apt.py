@@ -1,32 +1,29 @@
-import os
 from datetime import datetime, timedelta
-import utils.leboncoin
-import utils.mail
-
-def build_body(ads):
-    body = ""
-    for i in range(0, len(ads)):
-        ad = ads[i]
-        body = body + "appartement no " + str(i+1) +":  "+ str(ad.surface) + " m2    " + str(ad.price_by_meter()) +" euro/m2" + ad.remark + os.linesep
-        body = body + ad.url + os.linesep + os.linesep
-    return body
+import utils.leboncoin as leboncoin
+import utils.mail as mail
 
 if __name__ == '__main__':
-
-    date = datetime.now() #- timedelta(days=1)
-    price_by_meter_max = 5000
-    surface_min = 20
-    surface_max = 40
-    price_min = 50000
-    price_max =300000
-    keywords = ["Dock","cauchoise","beauvoisine"]
-    category = "ventes_immobilieres"
-    region = "aquitaine"
-    location = "Bordeaux 33000"
-    immo_type = "appartement"
-    to = "xavier.bollart@gmail.com"
+    # set request parameters
+    date = datetime.now() - timedelta(days=1)
     date = datetime(date.year, date.month, date.day)
-    ads_details = utils.leboncoin.get_ads_infos(category, region, location, date, price_min, price_max, surface_min, surface_max, price_by_meter_max, immo_type, keywords)
-    body = build_body(ads_details)
-    if(len(body) > 0):
-        utils.mail.send_mail(to,"Bordeaux Daily Report",body)
+    p_max_by_m2 = 5000
+    s_min = 20
+    s_max = 40
+    p_min = 50000
+    p_max = 300000
+
+    to = "xavier.bollart@gmail.com"
+
+    param_dict = {}
+    param_dict['category'] = 'ventes_immobilieres'
+    param_dict['region'] = 'haute_normandie'
+    param_dict['location'] = 'Rouen 76000'
+    param_dict['immo_type'] = 'appartement'
+
+
+    ads_details = leboncoin.get_ads_info(param_dict, date, p_min, p_max, s_min, s_max, p_max_by_m2)
+
+    # send Mail
+    body = mail.build_body(ads_details)
+    if len(body) > 0:
+        mail.send_mail(to, "Bordeaux Daily Report", body)

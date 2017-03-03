@@ -20,7 +20,7 @@ if __name__ == '__main__':
     to = "xavier.bollart@gmail.com"
     file_name = "output.csv"
 
-    ads_details = utils.leboncoin.get_ads_infos(category, region, location, date, price_min, price_max, surface_min, surface_max, price_by_meter_max, immo_type, keywords)
+    ads_details = utils.leboncoin.get_ads_info(category, region, location, date, price_min, price_max, surface_min, surface_max, price_by_meter_max, immo_type, keywords)
 
     ads_arr = [[ad.date.strftime("%Y-%m-%d %H:%M"),str(ad.price),str(ad.surface),ad.description] for ad in ads_details]
 
