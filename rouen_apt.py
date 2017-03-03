@@ -7,9 +7,7 @@ if __name__ == '__main__':
     # set request parameters
     date = datetime.now() - timedelta(days=1)
     date = datetime(date.year, date.month, date.day)
-
     to = "xavier.bollart@gmail.com"
-
     param_dict = {}
     param_dict['category'] = 'ventes_immobilieres'
     param_dict['region'] = 'haute_normandie'
