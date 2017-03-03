@@ -12,3 +12,5 @@ def write_csv_file(ads,file_name):
     for ad in ads:
         stream.write(ad[0] + "," + ad[1] + "," + ad[2] + "," + ad[3]+ os.linesep)
     stream.close() 
+
+

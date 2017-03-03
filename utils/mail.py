@@ -1,9 +1,10 @@
-
+import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
+
 
 def send_simple_mail(TO, SUBJECT, TEXT):
     server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -13,6 +14,17 @@ def send_simple_mail(TO, SUBJECT, TEXT):
     msg = "my message"
     server.sendmail("xavier.bollart@gmail.com", "xavier.bollart@gmail.com", msg)
     server.quit()
+
+
+def build_body(ads):
+    body = ""
+    i = 1
+    for index, row in ads.iterrows():
+        body = body + "appartement no " + str(i) + ":  " + str(row['surface']) + " m2    " + str(row['p_by_meter']) + " euro/m2" + os.linesep
+        body = body + row['url'] + os.linesep + os.linesep
+        i = i + 1
+    return body
+
 
 def send_mail( m_to, m_subject, m_body, m_file_path = "", m_file_name = ""):
     m_from = "snoopy.bollart@gmail.com"

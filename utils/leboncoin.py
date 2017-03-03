@@ -1,19 +1,19 @@
 import requests
 from lxml import html
-from datetime import datetime, timedelta
+from datetime import datetime
 import pandas as pd
 import math
 
 website = "https://www.leboncoin.fr"
 
 
-def get_all_ads_urls(category, region, filters_dict):
+def get_all_ads_urls(param_dico, filters_dict):
     i = 1
 
     result = pd.DataFrame()
     # increment page number while page is not empty
     while True:
-        url = website + "/" + category + "/offres/" + region + "/"
+        url = website + "/" + param_dico['category'] + "/offres/" + param_dico['region'] + "/"
         filters_dict.update({'o': i})
         page = requests.get(url, params=filters_dict)
         print(page.url)
@@ -27,32 +27,6 @@ def get_all_ads_urls(category, region, filters_dict):
         i = i + 1
     result['url'] = "http:" + result["url"]
     return result
-
-
-def is_valid(ad, date, price_ratio_max, surface_min, surface_max, keywords):
-    is_valid = True
-    date_min = date - timedelta(days=1)
-    #  date_min = datetime(prev_date.year, prev_date.month, prev_date.day)
-    date_max = date
-    # Check date is yesterday
-    # if ad.date != date:
-    if ad.date < date_min or ad.date > date_max:
-        is_valid = False
-        print("Date invalid")
-        # Check price per square meter
-    print(ad.price_by_meter())
-    if ad.price_by_meter() > price_ratio_max:
-        is_valid = False
-        print("price too high")
-    # Check surface
-    if ad.surface < surface_min or ad.surface > surface_max:
-        is_valid = False
-        print("surface not matching")
-    # Check Keywords
-    for keyword in keywords:
-        if keyword in ad.description:
-            ad.remark = ad.remark + " #" + keyword
-    return is_valid
 
 
 def min_price_filter(price):
@@ -134,17 +108,17 @@ def immo_type_filter(immo_type):
     return res
 
 
-def build_filters(location, p_min, p_max, s_min, s_max, immo_type):
+def build_filters(param_dico):
     # price min filter
-    ps = min_price_filter(p_min)
+    ps = min_price_filter(param_dico['p_min'])
     # price max filter
-    pe = max_price_filter(p_max)
+    pe = max_price_filter(param_dico['p_max'])
     # surface min filter
-    sqs = min_surface_filter(s_min)
+    sqs = min_surface_filter(param_dico['s_min'])
     # surface max filter
-    sqe = max_surface_filter(s_max)
+    sqe = max_surface_filter(param_dico['s_max'])
     # real estate type filter
-    ret = immo_type_filter(immo_type)
+    ret = immo_type_filter(param_dico['immo_type'])
     filter_dico = {}
 
     if ps != "0":
@@ -157,17 +131,17 @@ def build_filters(location, p_min, p_max, s_min, s_max, immo_type):
         filter_dico["sqe"] = sqe
     if ret != "none":
         filter_dico["ret"] = ret
-    if location != "unknown":
-        filter_dico["location"] = location
+    if param_dico['location'] != "unknown":
+        filter_dico["location"] = param_dico['location']
     return filter_dico
 
 
-def get_ads_infos(category, region, location, date, p_min, p_max, s_min, s_max, price_by_meter, immo_type, keywords={}):
-    filters = build_filters(location, p_min, p_max, s_min, s_max, immo_type)
-    urls = get_all_ads_urls(category, region, filters)
-    infos = pd.DataFrame(columns=['url', 'description', 'price', 'surface', 'date'])
+def get_ads_info(param_dict):
+    filters = build_filters(param_dict)
+    urls = get_all_ads_urls(param_dict, filters)
+    info = pd.DataFrame(columns=['url', 'description', 'price', 'surface', 'date'])
     # select only urls with date corresponding to date parameter
-    for index, row in urls.loc[date.strftime("%Y-%m-%d")].iterrows():
+    for index, row in urls.loc[param_dict['date'].strftime("%Y-%m-%d")].iterrows():
         print(row['url'])
         page = requests.get(row['url'])
         tree = html.fromstring(page.content)
@@ -176,8 +150,13 @@ def get_ads_infos(category, region, location, date, p_min, p_max, s_min, s_max, 
         ad_descriptions = tree.xpath('//div[@class="line properties_description"]/p[@itemprop="description"]/text()')
         ad_description = ''.join(line for line in ad_descriptions)
         ad_date = datetime.strptime(tree.xpath('//p[@class="line line_pro"]/@content')[0], '%Y-%m-%d')
-        infos.loc[len(infos)] = [row['url'], ad_description, ad_price, ad_surface, ad_date]
+        info.loc[len(info)] = [row['url'], ad_description, ad_price, ad_surface, ad_date]
 
-    #    if is_valid(ad, date, price_by_meter, s_min, s_max, keywords):
-    #        infos.append(ad)
-    return infos
+    # insert price by surface
+    info['p_by_meter'] = round(info['price'] / info['surface'])
+    # filter on price by meter
+    info = info[info['p_by_meter'] < param_dict['p_by_meter_max']]
+    # filter by surface
+    info = info[(info['surface'] > param_dict['s_min']) & (info['surface'] < param_dict['s_max'])]
+
+    return info
