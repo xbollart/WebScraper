@@ -20,9 +20,9 @@ def get_all_ads_urls(param_dico, filters_dict):
         tree = html.fromstring(page.content)
         url = tree.xpath('//li[@itemtype="http://schema.org/Offer"]/a/@href')
         date = tree.xpath('//li[@itemtype="http://schema.org/Offer"]/a/section/aside/p/@content')
-        tmp = pd.DataFrame(data=url, index=date, columns=['url'])
-        if tmp.size == 0:
+        if len(url) == 0 or len(date) == 0:
             break
+        tmp = pd.DataFrame(data=url, index=date, columns=['url'])
         result = pd.concat([result, tmp])
         i = i + 1
     result['url'] = "http:" + result["url"]
@@ -153,7 +153,8 @@ def get_ads_info(param_dict):
         info.loc[len(info)] = [row['url'], ad_description, ad_price, ad_surface, ad_date]
 
     # insert price by surface
-    info['p_by_meter'] = round(info['price'] / info['surface'])
+    info['p_by_meter'] = info['price'] / info['surface']
+    info.round({'p_by_meter': 1})
     # filter on price by meter
     info = info[info['p_by_meter'] < param_dict['p_by_meter_max']]
     # filter by surface
